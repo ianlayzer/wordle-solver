@@ -1,8 +1,6 @@
-from nltk import download
-from nltk.corpus import words
 from collections import defaultdict
 from wordle import WordlePuzzle, LetterColor, isSolved
-
+from statistics import mean
 
 class WordleSolver:
     def __init__(self, englishDictionary, numLetters, numGuesses):
@@ -85,12 +83,14 @@ class WordleSolver:
                 for word in self.candidates:
                     if letter not in word:
                         newCandidates.append(word)
-                self.candidates = newCandidates         
-        print(len(self.candidates))
-                
+                self.candidates = newCandidates                         
             
 wordleWords = [l.strip() for l in open("wordle-words.txt").readlines()]
 
-solver = WordleSolver(wordleWords, 5, 6)
-guesses = solver.solve(WordlePuzzle("abbey"))
-print(guesses)
+guessCounts = []
+for word in wordleWords:
+    solver = WordleSolver(wordleWords, 5, 6)
+    guesses = solver.solve(WordlePuzzle(word))
+    guessCounts.append(len(guesses))
+
+print(f"Average number of guesses: {mean(guessCounts)}")
