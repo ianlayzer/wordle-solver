@@ -37,6 +37,8 @@ class WordlePuzzle:
         return list(zip(guess, result))
 
 def isSolved(guessResult):
+    if not guessResult:
+        return False
     for letter, color in guessResult:
         if color != LetterColor.GREEN:
             return False

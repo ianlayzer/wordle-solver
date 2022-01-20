@@ -2,9 +2,8 @@ from collections import defaultdict
 from wordle import LetterColor, isSolved
 
 class WordleSolver:
-    def __init__(self, dictionary, numLetters, numGuesses):
+    def __init__(self, dictionary, numLetters):
         self.numLetters = numLetters
-        self.numGuesses = numGuesses
         self.dictionary = self.createWordleDictionary(dictionary)
         self.candidates = self.dictionary
 
@@ -17,16 +16,19 @@ class WordleSolver:
 
     def solve(self, wordlePuzzle):
         guesses = []
-        guessNum = 1
-        while guessNum <= self.numGuesses:
+        guessResult = None
+        while not isSolved(guessResult):
             guess = self.getBestCandidate()
             guesses.append(guess)
             guessResult = wordlePuzzle.checkGuess(guess)
-            if isSolved(guessResult):
-                break
             self.pruneCandidates(guessResult)
-            guessNum += 1
+            if len(guesses) > 10:
+                break
         self.candidates = self.dictionary # reset
+        if len(guesses) > 6:
+            print(f"Took more than 6 guesses to solve: {wordlePuzzle.targetWord}")
+            print(guesses)
+            print()
         return guesses
 
     def getBestCandidate(self):
@@ -76,9 +78,9 @@ class WordleSolver:
                 self.candidates = newCandidates
         # handle gray letters
         for i, (letter, color) in enumerate(guessResult):
-            if color == LetterColor.GRAY and letter not in lettersInWord:
+            if color == LetterColor.GRAY:
                 newCandidates = []        
                 for word in self.candidates:
-                    if letter not in word:
+                    if letter not in word or (letter in lettersInWord and word[i] != letter):
                         newCandidates.append(word)
                 self.candidates = newCandidates   
