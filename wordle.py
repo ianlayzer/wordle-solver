@@ -33,9 +33,13 @@ class WordlePuzzle:
                 result[i] = LetterColor.GRAY
             elif currCounts[letter] <= targetLetterCount:
                 result[i] = LetterColor.YELLOW
-        return result
+        return list(zip(guess, result))
 
-        
+def isSolved(guessResult):
+    for letter, color in guessResult:
+        if color != LetterColor.GREEN:
+            return False
+    return True       
 
 # puzzle = WordlePuzzle("BANAL")
 # puzzle.checkGuess("ANNAL")
