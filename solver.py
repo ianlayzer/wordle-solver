@@ -1,15 +1,12 @@
 from collections import defaultdict
-from wordle import WordlePuzzle, LetterColor, isSolved
-from statistics import mean
+from wordle import LetterColor, isSolved
 
 class WordleSolver:
-    def __init__(self, englishDictionary, numLetters, numGuesses):
+    def __init__(self, dictionary, numLetters, numGuesses):
         self.numLetters = numLetters
         self.numGuesses = numGuesses
-        self.dictionary = self.createWordleDictionary(englishDictionary)
-
+        self.dictionary = self.createWordleDictionary(dictionary)
         self.candidates = self.dictionary
-        self.guessResults = []
 
     def createWordleDictionary(self, englishDictionary):
         wordleDictionary = []
@@ -20,7 +17,6 @@ class WordleSolver:
 
     def solve(self, wordlePuzzle):
         guesses = []
-        # score all words
         guessNum = 1
         while guessNum <= self.numGuesses:
             guess = self.getBestCandidate()
@@ -30,26 +26,30 @@ class WordleSolver:
                 break
             self.pruneCandidates(guessResult)
             guessNum += 1
-
+        self.candidates = self.dictionary # reset
         return guesses
 
     def getBestCandidate(self):
-        # get letter scores
+        # get counts of every letter throughout entire dictionary
         letterCounts = defaultdict(int)
         totalLetters = 0
-        indexToLetterToScore = defaultdict(lambda: defaultdict(int))
+        # get counts of every letter at each position
+        indexToLetterToCount = defaultdict(lambda: defaultdict(int))
         for word in self.candidates:
             for i, letter in enumerate(word):
                 letterCounts[letter] += 1
-                indexToLetterToScore[i][letter] += 1
+                indexToLetterToCount[i][letter] += 1
             totalLetters += len(word)
 
-        # get word scores
+        # get word scores by summing scores of letters
         wordScores = {}
         for word in self.candidates:
             score = 0
             for i, letter in enumerate(word):
-                score += indexToLetterToScore[i][letter] * letterCounts[letter] / totalLetters
+                # weight by frequency to favor more common letters to increase likelihood of yellow result
+                letterFrequency = letterCounts[letter] / totalLetters
+                letterScore = indexToLetterToCount[i][letter] * letterFrequency
+                score += letterScore
             score *= len(set(list(word))) / len(word)
             wordScores[word] = score
         
@@ -57,7 +57,7 @@ class WordleSolver:
         return bestWord
 
     def pruneCandidates(self, guessResult):
-        # handle green letters
+        # handle green and yellow letters
         lettersInWord = set()
         for i, (letter, color) in enumerate(guessResult):
             if color == LetterColor.GREEN:
@@ -67,9 +67,7 @@ class WordleSolver:
                     if word[i] == letter:
                         newCandidates.append(word)
                 self.candidates = newCandidates
-        # handle yellow letters
-        for i, (letter, color) in enumerate(guessResult):
-            if color == LetterColor.YELLOW:
+            elif color == LetterColor.YELLOW:
                 lettersInWord.add(letter)
                 newCandidates = []        
                 for word in self.candidates:
@@ -83,14 +81,4 @@ class WordleSolver:
                 for word in self.candidates:
                     if letter not in word:
                         newCandidates.append(word)
-                self.candidates = newCandidates                         
-            
-wordleWords = [l.strip() for l in open("wordle-words.txt").readlines()]
-
-guessCounts = []
-for word in wordleWords:
-    solver = WordleSolver(wordleWords, 5, 6)
-    guesses = solver.solve(WordlePuzzle(word))
-    guessCounts.append(len(guesses))
-
-print(f"Average number of guesses: {mean(guessCounts)}")
+                self.candidates = newCandidates   

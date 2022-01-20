@@ -13,6 +13,7 @@ class WordlePuzzle:
     def __init__(self, targetWord):
         self.targetWord = targetWord
         self.targetCounter = Counter(self.targetWord)
+    
     def checkGuess(self, guess):
         result = [None for _ in range(len(guess))]        
         greenCounts = defaultdict(int)
@@ -40,16 +41,3 @@ def isSolved(guessResult):
         if color != LetterColor.GREEN:
             return False
     return True       
-
-# puzzle = WordlePuzzle("BANAL")
-# puzzle.checkGuess("ANNAL")
-# puzzle.checkGuess("UNION")
-# puzzle.checkGuess("ALLOY")
-# puzzle.checkGuess("BANAL")
-
-# puzzle = WordlePuzzle("PROXY")
-# puzzle.checkGuess("AEGIS")
-# puzzle.checkGuess("MOUNT")
-# puzzle.checkGuess("COOCH")
-# puzzle.checkGuess("DROOP")
-# puzzle.checkGuess("PROXY")
